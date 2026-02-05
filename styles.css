@@ -32,6 +32,12 @@ main header{
   height: 20rem;
   color: white;
 }
+header a{
+  color: white;
+}
+header a:hover{
+  color: #ffffffaa;
+}
 
 main footer {
   height: 20rem;
