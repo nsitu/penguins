@@ -59,19 +59,14 @@
     </tableau-viz>
   </div>
 </div>
-
 <script type="module">
   const viz = document.getElementById("viz");
   const statusEl = document.getElementById("status");
   const controlsEl = document.getElementById("controls");
 
-  // Change this ONLY if your filter’s field caption in Tableau isn’t exactly “Island”.
   const FILTER_FIELD_CAPTION = "Island";
 
-  // Small helper: Embedding API v3 uses FilterUpdateType.Replace/Add/Remove/All.
-  // In some environments, you can also pass the literal string like "replace".
   function getReplaceEnum() {
-    // Prefer the v3 enum if present, otherwise fall back to the string literal.
     return (globalThis.FilterUpdateType?.Replace) ?? "replace";
   }
 
@@ -81,12 +76,18 @@
 
   async function applyIslandFilter() {
     const values = getCheckedValues();
-    const activeSheet = viz.workbook.activeSheet;
 
+    // Guard: workbook can be briefly undefined right after load.
+    const workbook = viz.workbook;
+    if (!workbook) {
+      statusEl.textContent = "Viz not ready yet…";
+      return;
+    }
+
+    const activeSheet = workbook.activeSheet; // now safe
     statusEl.textContent = "Applying filter…";
 
     if (values.length === 0) {
-      // Reset to "All"
       await activeSheet.clearFilterAsync(FILTER_FIELD_CAPTION);
       statusEl.textContent = "Filter cleared (All islands).";
       return;
@@ -94,22 +95,38 @@
 
     await activeSheet.applyFilterAsync(
       FILTER_FIELD_CAPTION,
-      values,                 // multi-select values
-      getReplaceEnum()        // Replace current selection with exactly these values
+      values,
+      getReplaceEnum()
     );
 
     statusEl.textContent = `Filtered: ${values.join(", ")}`;
   }
 
-  // Wait until the viz is interactive before wiring UI.
-  // v3 supports a "firstinteractive" event, but waiting on ready is simplest.
+  // Disable UI until viz is actually interactive
+  controlsEl.querySelectorAll("input").forEach(i => (i.disabled = true));
+  statusEl.textContent = "Loading viz…";
+
+  // Most reliable: wait for the first time the viz is interactive.
+  viz.addEventListener("firstinteractive", async () => {
+    controlsEl.querySelectorAll("input").forEach(i => (i.disabled = false));
+    statusEl.textContent = "Viz loaded.";
+
+    controlsEl.addEventListener("change", () => applyIslandFilter());
+
+    // Apply initial filter state
+    await applyIslandFilter();
+  });
+
+  // Fallback: if the event doesn't fire for some reason, try after ready.
+  // (This prevents "dead UI" in edge cases.)
   await viz.ready;
-
-  statusEl.textContent = "Viz loaded.";
-  controlsEl.addEventListener("change", () => applyIslandFilter());
-
-  // Apply initial state (all checked)
-  await applyIslandFilter();
+  if (!viz.workbook) {
+    // give it a moment; no busy loop
+    setTimeout(() => {
+      if (viz.workbook) viz.dispatchEvent(new Event("firstinteractive"));
+    }, 250);
+  }
 </script>
+
 </body>
 </html>
