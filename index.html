@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flippers by Island (Embedded with Checkboxes)</title>
+
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 14px;
+      align-items: center;
+      padding: 10px 12px; border: 1px solid #ddd; border-radius: 10px;
+      margin-bottom: 14px;
+    }
+    .controls label { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
+    .status { font-size: 12px; opacity: 0.8; margin-left: auto; }
+    .vizbox { border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
+  </style>
+
+  <!-- Embedding API v3 (module) -->
+  <script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
+  <!-- ^ Tableau documents this “type=module” include for v3. -->
+</head>
+
+<body>
+<div class="wrap">
+  <h1 style="margin:0 0 12px;">Flippers by Island</h1>
+
+  <div class="controls" id="controls">
+    <strong>Filter Island:</strong>
+
+    <label>
+      <input type="checkbox" value="Torgersen" checked />
+      Torgersen
+    </label>
+
+    <label>
+      <input type="checkbox" value="Dream" checked />
+      Dream
+    </label>
+
+    <label>
+      <input type="checkbox" value="Biscoe" checked />
+      Biscoe
+    </label>
+
+    <span class="status" id="status">Loading viz…</span>
+  </div>
+
+  <div class="vizbox">
+    <tableau-viz
+      id="viz"
+      src="https://public.tableau.com/views/FlippersbyIsland/FlippersbyIsland"
+      toolbar="bottom"
+      hide-tabs
+      style="width:100%; height:720px; display:block;">
+    </tableau-viz>
+  </div>
+</div>
+
+<script type="module">
+  const viz = document.getElementById("viz");
+  const statusEl = document.getElementById("status");
+  const controlsEl = document.getElementById("controls");
+
+  // Change this ONLY if your filter’s field caption in Tableau isn’t exactly “Island”.
+  const FILTER_FIELD_CAPTION = "Island";
+
+  // Small helper: Embedding API v3 uses FilterUpdateType.Replace/Add/Remove/All.
+  // In some environments, you can also pass the literal string like "replace".
+  function getReplaceEnum() {
+    // Prefer the v3 enum if present, otherwise fall back to the string literal.
+    return (globalThis.FilterUpdateType?.Replace) ?? "replace";
+  }
+
+  function getCheckedValues() {
+    return [...controlsEl.querySelectorAll('input[type="checkbox"]:checked')].map(i => i.value);
+  }
+
+  async function applyIslandFilter() {
+    const values = getCheckedValues();
+    const activeSheet = viz.workbook.activeSheet;
+
+    statusEl.textContent = "Applying filter…";
+
+    if (values.length === 0) {
+      // Reset to "All"
+      await activeSheet.clearFilterAsync(FILTER_FIELD_CAPTION);
+      statusEl.textContent = "Filter cleared (All islands).";
+      return;
+    }
+
+    await activeSheet.applyFilterAsync(
+      FILTER_FIELD_CAPTION,
+      values,                 // multi-select values
+      getReplaceEnum()        // Replace current selection with exactly these values
+    );
+
+    statusEl.textContent = `Filtered: ${values.join(", ")}`;
+  }
+
+  // Wait until the viz is interactive before wiring UI.
+  // v3 supports a "firstinteractive" event, but waiting on ready is simplest.
+  await viz.ready;
+
+  statusEl.textContent = "Viz loaded.";
+  controlsEl.addEventListener("change", () => applyIslandFilter());
+
+  // Apply initial state (all checked)
+  await applyIslandFilter();
+</script>
+</body>
+</html>
