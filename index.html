@@ -3,21 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Flippers by Island (Embedded with Checkboxes)</title>
+  <title>waddle waddle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap" rel="stylesheet">
 
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; }
-    .wrap { max-width: 1100px; margin: 0 auto; }
-    .controls {
-      display: flex; flex-wrap: wrap; gap: 14px;
-      align-items: center;
-      padding: 10px 12px; border: 1px solid #ddd; border-radius: 10px;
-      margin-bottom: 14px;
-    }
-    .controls label { display: inline-flex; gap: 8px; align-items: center; cursor: pointer; }
-    .status { font-size: 12px; opacity: 0.8; margin-left: auto; }
-    .vizbox { border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 
   <!-- Embedding API v3 (module) -->
   <script type="module" src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.min.js"></script>
@@ -25,108 +16,54 @@
 </head>
 
 <body>
-<div class="wrap">
-  <h1 style="margin:0 0 12px;">Flippers by Island</h1>
+  
+<main> 
+  <header>
+    <h1>when i say freeze</h1>
+    <p>you embed a dashboard on a webpage so that you can fully control the styling and buttons.</p>
+  </header>
 
-  <div class="controls" id="controls">
-    <strong>Filter Island:</strong>
-
-    <label>
-      <input type="checkbox" value="Torgersen" checked />
-      Torgersen
-    </label>
-
-    <label>
-      <input type="checkbox" value="Dream" checked />
-      Dream
-    </label>
-
-    <label>
-      <input type="checkbox" value="Biscoe" checked />
-      Biscoe
-    </label>
-
-    <span class="status" id="status">Loading viz…</span>
-  </div>
-
-  <div class="vizbox">
+  <div id="vizbox"  >
     <tableau-viz
       id="viz"
-      src="https://public.tableau.com/views/FlippersbyIsland/FlippersbyIsland"
-      toolbar="bottom"
-      hide-tabs
-      style="width:100%; height:720px; display:block;">
-    </tableau-viz>
+      src="https://public.tableau.com/views/waddle/waddle"
+      toolbar="hidden"  
+      hide-tabs>
+    </tableau-viz>  
   </div>
-</div>
-<script type="module">
-  const viz = document.getElementById("viz");
-  const statusEl = document.getElementById("status");
-  const controlsEl = document.getElementById("controls");
 
-  const FILTER_FIELD_CAPTION = "Island";
+  <div class="controls" id="controls">
+    <label class="island-checkbox">
+      <input type="checkbox" value="Torgersen" checked />
+      <span class="island-img" style="background-image: url('assets/Torgersen.jpg');">
+        <img class="check-icon" src="assets/check.svg" alt="" />
+      </span>
+      <span class="island-name">Torgersen</span>
+    </label>
 
-  function getReplaceEnum() {
-    return (globalThis.FilterUpdateType?.Replace) ?? "replace";
-  }
+    <label class="island-checkbox">
+      <input type="checkbox" value="Dream" checked />
+      <span class="island-img" style="background-image: url('assets/Dream.jpg');">
+        <img class="check-icon" src="assets/check.svg" alt="" />
+      </span>
+      <span class="island-name">Dream</span>
+    </label>
 
-  function getCheckedValues() {
-    return [...controlsEl.querySelectorAll('input[type="checkbox"]:checked')].map(i => i.value);
-  }
+    <label class="island-checkbox">
+      <input type="checkbox" value="Biscoe" checked />
+      <span class="island-img" style="background-image: url('assets/Biscoe.jpg');">
+        <img class="check-icon" src="assets/check.svg" alt="" />
+      </span>
+      <span class="island-name">Biscoe</span>
+    </label>
+    </div>
 
-  async function applyIslandFilter() {
-    const values = getCheckedValues();
-
-    // Guard: workbook can be briefly undefined right after load.
-    const workbook = viz.workbook;
-    if (!workbook) {
-      statusEl.textContent = "Viz not ready yet…";
-      return;
-    }
-
-    const activeSheet = workbook.activeSheet; // now safe
-    statusEl.textContent = "Applying filter…";
-
-    if (values.length === 0) {
-      await activeSheet.clearFilterAsync(FILTER_FIELD_CAPTION);
-      statusEl.textContent = "Filter cleared (All islands).";
-      return;
-    }
-
-    await activeSheet.applyFilterAsync(
-      FILTER_FIELD_CAPTION,
-      values,
-      getReplaceEnum()
-    );
-
-    statusEl.textContent = `Filtered: ${values.join(", ")}`;
-  }
-
-  // Disable UI until viz is actually interactive
-  controlsEl.querySelectorAll("input").forEach(i => (i.disabled = true));
-  statusEl.textContent = "Loading viz…";
-
-  // Most reliable: wait for the first time the viz is interactive.
-  viz.addEventListener("firstinteractive", async () => {
-    controlsEl.querySelectorAll("input").forEach(i => (i.disabled = false));
-    statusEl.textContent = "Viz loaded.";
-
-    controlsEl.addEventListener("change", () => applyIslandFilter());
-
-    // Apply initial filter state
-    await applyIslandFilter();
-  });
-
-  // Fallback: if the event doesn't fire for some reason, try after ready.
-  // (This prevents "dead UI" in edge cases.)
-  await viz.ready;
-  if (!viz.workbook) {
-    // give it a moment; no busy loop
-    setTimeout(() => {
-      if (viz.workbook) viz.dispatchEvent(new Event("firstinteractive"));
-    }, 250);
-  }
-</script>
+    <footer>
+      
+    </footer>
+   
+  </main>
+<script type="module" src="main.js"></script>
 
 </body>
 </html>

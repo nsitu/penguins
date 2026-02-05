@@ -1,0 +1,103 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body { 
+  font-family: "Cascadia Code", sans-serif; 
+  background-color: #000;
+
+  background: #020024;
+background: #041421;
+background: linear-gradient(0deg, rgba(4, 20, 33, 1) 0%, rgba(22, 76, 122, 1) 35%, rgba(0, 125, 215, 1) 100%);
+  /* font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal; */
+}
+
+ 
+
+main {
+  position: relative;  
+  margin: 0 auto;
+  width: 1200px; 
+  padding-bottom: 10rem;
+}
+
+main header{
+  padding-top:2rem;
+  background: url('assets/mountains.svg') no-repeat center;
+  background-position: bottom center;
+  height: 20rem;
+  color: white;
+}
+
+main footer {
+  height: 20rem;
+  background: url('assets/mountains.svg') no-repeat center;
+    background-position: bottom center;
+  transform: rotate(180deg);
+}
+  
+.controls {
+  position: absolute;
+  bottom: 30%;
+  left: 100px;
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  z-index: 10;
+}
+ 
+    /* Visual checkbox styling */
+.island-checkbox {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.island-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.island-checkbox .island-img {
+  width: 80px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  box-sizing: border-box;
+  border: 4px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.island-checkbox .check-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+.island-checkbox input[type="checkbox"]:checked + .island-img .check-icon {
+  opacity: 1;
+}
+.island-checkbox input[type="checkbox"]:checked + .island-img {
+  border: 4px solid #ffffff;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+.island-checkbox:hover .island-img {
+  opacity: 0.9;
+}
+.island-checkbox .island-name {
+  text-align: center;
+  font-size: 1rem;
+  margin-top: 4px;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
